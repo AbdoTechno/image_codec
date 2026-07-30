@@ -2,19 +2,16 @@
 
 A reusable Dart/Flutter image codec package for compressing images, resizing them, and converting them to Base64 for easy upload to servers or storage.
 
-## How to add this package to any project
+## ✅ Quick start
 
-If your package is already on GitHub, anyone can use it directly without downloading the files locally.
-
-### Option 1: Install from GitHub directly
-
-Add this to your app's pubspec.yaml:
+If your package lives inside a subfolder named `image_codec` in your GitHub repository, add this to your app's `pubspec.yaml`:
 
 ```yaml
 dependencies:
   image_codec:
     git:
-      url: https://github.com/your-username/image_codec.git
+      url: https://github.com/AbdoTechno/image_codec.git
+      path: image_codec
 ```
 
 Then run:
@@ -23,27 +20,26 @@ Then run:
 flutter pub get
 ```
 
-After that, import it in your code:
+Import it in your Dart code:
 
 ```dart
 import 'package:image_codec/image_codec.dart';
 ```
 
-### Option 2: Install from a specific branch or tag
+### Install from a specific branch or tag
 
 ```yaml
 dependencies:
   image_codec:
     git:
-      url: https://github.com/your-username/image_codec.git
+      url: https://github.com/AbdoTechno/image_codec.git
+      path: image_codec
       ref: main
 ```
 
-You can replace `main` with a branch name, tag, or commit hash.
+### Install from pub.dev
 
-### Option 3: Install from pub.dev
-
-If you publish it later to pub.dev, use:
+If you publish the package later, use:
 
 ```yaml
 dependencies:
@@ -52,19 +48,21 @@ dependencies:
 
 ## Why this package?
 
-This package is designed around a simple and reusable flow:
+This package is built for the common use case where you want to send images to a server, but you also want to reduce their size first.
 
-Image -> Resize/Compress -> Base64 -> Server -> Base64 -> Decode -> Bytes -> Cache/UI
+The flow is:
 
-The goal is not just to convert an image to Base64, but to reduce its size before sending it over the network.
+`Image → Resize/Compress → Base64 → Server → Base64 → Decode → Bytes → Cache/UI`
+
+It is not just a Base64 converter: it is a reusable image codec layer that helps keep uploads smaller and faster.
 
 ## Main features
 
 - Compress image files and byte arrays
 - Resize images before encoding
-- Return useful metadata such as width, height, size, and compression ratio
-- Decode Base64 strings and data URLs back into raw bytes
-- Keep a clean API that can be reused across multiple apps
+- Return metadata like width, height, and compression stats
+- Decode Base64 strings or data URLs back into raw bytes
+- Keep API simple and reusable across apps
 
 ## Package structure
 
@@ -79,26 +77,9 @@ image_codec/
         └── image_decoder.dart
 ```
 
-## Installation
-
-Add the package to your project:
-
-```yaml
-dependencies:
-  image_codec:
-    path: ../image_codec
-```
-
-If you publish it later to pub.dev, you can use:
-
-```yaml
-dependencies:
-  image_codec: ^1.0.0
-```
-
 ## Core API
 
-The package exposes a single entry point:
+Use the package with a single import:
 
 ```dart
 import 'package:image_codec/image_codec.dart';
@@ -111,16 +92,15 @@ import 'dart:io';
 import 'package:image_codec/image_codec.dart';
 
 final file = File('path/to/image.jpg');
-
 final result = await ImageCodec.encode(file);
 
-print(result.data);              // Base64 string
-print(result.originalSize);      // original image size in bytes
-print(result.compressedSize);    // compressed image size in bytes
-print(result.base64Size);        // Base64 size in bytes
-print(result.base64Length);      // number of Base64 characters
-print(result.compressionRatio);  // reduction ratio
-print(result.compressionPercentage); // percentage reduced
+print(result.data);
+print(result.originalSize);
+print(result.compressedSize);
+print(result.base64Size);
+print(result.base64Length);
+print(result.compressionRatio);
+print(result.compressionPercentage);
 ```
 
 ### Encode from bytes
@@ -143,22 +123,22 @@ final bytes = ImageCodec.decode(result.data);
 
 ## What the result contains
 
-The returned object is an `EncodedImage` with the following properties:
+`ImageCodec.encode()` and `ImageCodec.encodeBytes()` return an `EncodedImage` with:
 
-- `data`: the Base64 string to send to the server
-- `mimeType`: the MIME type of the encoded image
-- `extension`: the file extension such as `jpg`
+- `data`: Base64 string ready for upload
+- `mimeType`: image MIME type (e.g. `image/jpeg`)
+- `extension`: file extension (e.g. `jpg`)
 - `originalSize`: size of the original image bytes
 - `compressedSize`: size after compression
-- `base64Size`: size of the Base64 string representation
-- `width`: resized/compressed image width
-- `height`: resized/compressed image height
-- `base64Length`: number of Base64 characters
-- `compressionRatio`: how much size was reduced
-- `compressionPercentage`: compression ratio as a percentage
-- `base64OverheadPercentage`: overhead introduced by Base64 encoding
+- `base64Size`: size of the Base64 string
+- `width`: output image width
+- `height`: output image height
+- `base64Length`: length of the Base64 string
+- `compressionRatio`: compression ratio
+- `compressionPercentage`: compression percentage
+- `base64OverheadPercentage`: Base64 overhead compared to compressed bytes
 
-## Human-readable size helpers
+## Human-readable sizes
 
 ```dart
 print(result.originalSizeFormatted);
@@ -168,7 +148,7 @@ print(result.base64SizeFormatted);
 
 ## Recommended defaults
 
-A good starting point for most apps:
+Use these values for a good size/quality balance:
 
 ```dart
 final result = await ImageCodec.encode(
@@ -181,7 +161,7 @@ final result = await ImageCodec.encode(
 
 ### Suggested values
 
-- `quality: 80` for a balanced size/quality tradeoff
+- `quality: 80` — balanced quality and size
 - `maxWidth: 1280`
 - `maxHeight: 1280`
 
@@ -193,10 +173,8 @@ import 'package:image_codec/image_codec.dart';
 
 final file = File('path/to/image.jpg');
 final encoded = await ImageCodec.encode(file, quality: 80);
-
 final imageString = encoded.data;
 
-// Send to your API
 await api.uploadImage(imageString);
 ```
 
@@ -207,19 +185,27 @@ import 'package:image_codec/image_codec.dart';
 
 final bytes = ImageCodec.decode(serverImageString);
 
-// Use it in your app
+// Display the image
 // Image.memory(bytes);
 ```
 
 ## Notes
 
 - The package currently encodes images as JPEG for efficient compression.
-- This package focuses on compression, encoding, decoding, and metadata only.
+- It focuses on compression, encoding, decoding, and metadata only.
 - It does not handle image picking, caching, upload, or UI rendering directly.
 
 ## Design goal
 
-This package is intentionally reusable and framework-agnostic. It can be used in:
+This package is intentionally reusable and framework-agnostic.
+It can be used in:
+
+- Flutter apps
+- custom clients
+- backend utilities
+- shared image-processing workflows
+
+It is meant to be a clean reusable image codec layer between your app and your server.
 
 - Flutter apps
 - custom clients
