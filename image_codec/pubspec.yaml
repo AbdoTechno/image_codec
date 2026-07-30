@@ -1,0 +1,15 @@
+name: image_codec
+description: Image compression and Base64 encoding utility for Flutter.
+version: 1.0.0
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  image: ^4.5.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
