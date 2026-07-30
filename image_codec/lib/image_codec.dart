@@ -8,6 +8,7 @@ import 'src/image_encoder.dart';
 export 'src/encoded_image.dart';
 export 'src/image_decoder.dart';
 export 'src/image_encoder.dart';
+
 class ImageCodec {
   const ImageCodec._();
 

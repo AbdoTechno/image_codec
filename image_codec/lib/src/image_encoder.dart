@@ -13,14 +13,17 @@ class ImageEncoder {
     int maxWidth = 1280,
     int maxHeight = 1280,
   }) async {
-    final originalBytes =
-        await file.readAsBytes();
+    _validateResizeOptions(
+      quality: quality,
+      maxWidth: maxWidth,
+      maxHeight: maxHeight,
+    );
 
-    final originalSize =
-        originalBytes.length;
+    final originalBytes = await file.readAsBytes();
 
-    final image =
-        img.decodeImage(originalBytes);
+    final originalSize = originalBytes.length;
+
+    final image = img.decodeImage(originalBytes);
 
     if (image == null) {
       throw const FormatException(
@@ -33,40 +36,32 @@ class ImageEncoder {
     // Resize only when necessary.
     if (image.width > maxWidth ||
         image.height > maxHeight) {
-      processedImage =
-          img.copyResize(
+      processedImage = img.copyResize(
         image,
-        width: image.width > image.height
-            ? maxWidth
-            : null,
-        height: image.height >= image.width
-            ? maxHeight
-            : null,
+        width: image.width > image.height ? maxWidth : null,
+        height:
+            image.height >= image.width ? maxHeight : null,
         maintainAspect: true,
       );
     }
 
-    final Uint8List compressedBytes =
-        Uint8List.fromList(
+    final Uint8List compressedBytes = Uint8List.fromList(
       img.encodeJpg(
         processedImage,
         quality: quality,
       ),
     );
 
-    final base64String =
-        base64Encode(compressedBytes);
+    final base64String = base64Encode(compressedBytes);
 
-    final base64Size =
-        utf8.encode(base64String).length;
+    final base64Size = utf8.encode(base64String).length;
 
     return EncodedImage(
       data: base64String,
       mimeType: 'image/jpeg',
       extension: 'jpg',
       originalSize: originalSize,
-      compressedSize:
-          compressedBytes.length,
+      compressedSize: compressedBytes.length,
       base64Size: base64Size,
       width: processedImage.width,
       height: processedImage.height,
@@ -79,6 +74,18 @@ class ImageEncoder {
     int maxWidth = 1280,
     int maxHeight = 1280,
   }) {
+    _validateResizeOptions(
+      quality: quality,
+      maxWidth: maxWidth,
+      maxHeight: maxHeight,
+    );
+
+    if (bytes.isEmpty) {
+      throw const FormatException(
+        'Cannot encode empty bytes.',
+      );
+    }
+
     final originalSize = bytes.length;
 
     final image = img.decodeImage(bytes);
@@ -93,43 +100,65 @@ class ImageEncoder {
 
     if (image.width > maxWidth ||
         image.height > maxHeight) {
-      processedImage =
-          img.copyResize(
+      processedImage = img.copyResize(
         image,
-        width: image.width > image.height
-            ? maxWidth
-            : null,
-        height: image.height >= image.width
-            ? maxHeight
-            : null,
+        width: image.width > image.height ? maxWidth : null,
+        height:
+            image.height >= image.width ? maxHeight : null,
         maintainAspect: true,
       );
     }
 
-    final compressedBytes =
-        Uint8List.fromList(
+    final compressedBytes = Uint8List.fromList(
       img.encodeJpg(
         processedImage,
         quality: quality,
       ),
     );
 
-    final base64String =
-        base64Encode(compressedBytes);
+    final base64String = base64Encode(compressedBytes);
 
-    final base64Size =
-        utf8.encode(base64String).length;
+    final base64Size = utf8.encode(base64String).length;
 
     return EncodedImage(
       data: base64String,
       mimeType: 'image/jpeg',
       extension: 'jpg',
       originalSize: originalSize,
-      compressedSize:
-          compressedBytes.length,
+      compressedSize: compressedBytes.length,
       base64Size: base64Size,
       width: processedImage.width,
       height: processedImage.height,
     );
+  }
+
+  static void _validateResizeOptions({
+    required int quality,
+    required int maxWidth,
+    required int maxHeight,
+  }) {
+    if (quality <= 0 || quality > 100) {
+      throw ArgumentError.value(
+        quality,
+        'quality',
+        'Must be between 1 and 100.',
+      );
+    }
+
+    if (maxWidth <= 0) {
+      throw ArgumentError.value(
+        maxWidth,
+        'maxWidth',
+        'Must be greater than 0.',
+      );
+    }
+
+    if (maxHeight <= 0) {
+      throw ArgumentError.value(
+        maxHeight,
+        'maxHeight',
+        'Must be greater than 0.',
+      );
+    }
   }
 }
